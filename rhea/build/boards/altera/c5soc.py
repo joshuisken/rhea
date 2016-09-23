@@ -23,7 +23,7 @@ class C5SOC(FPGA):
     }
 
     default_resets = {
-        'reset': dict(active=0, async=True, pins('AD27',))
+        'reset': dict(active=0, async=True, pins=('AD27',))
     }
     
     # Could use this:
