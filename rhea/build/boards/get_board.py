@@ -6,20 +6,26 @@ from __future__ import print_function
 
 
 # import all the board definitions
-from .xilinx import (Xula, Xula2, Xula2StickItMB, 
-                     Pone, Anvyl, Mojo, Nexys, Atlys,
-                     Zybo, Parallella, SX1, UFO400, XUPV2P)
-from .altera import (DE0Nano, DE0NanoSOC, DE0CV)
+from .xilinx import (Anvyl, Atlys, Mojo, Nexys, NexysVideo, Parallella,
+                     PapilioOne, PapilioPro, SX1, UFO400, Waxwing45,
+                     Waxwing45carrier, Xula, Xula2, Xula2StickItMB,
+                     XUPV2P, Zybo, CModA7_15T, CModA7_35T)
+from .altera import (DE0Nano, DE0NanoSOC, DE0CV, DE1SOC)
 from .lattice import (Icestick, CATBoard)
 
 
-xbrd = {'xula': Xula, 'xula2': Xula2, 'xula2_stickit_mb': Xula2StickItMB,
-        'pone': Pone, 'anvyl': Anvyl,
-        'mojo': Mojo, 'atlys': Atlys, 'nexys': Nexys, 'zybo': Zybo,
-        'parallella': Parallella, 'sx1': SX1, 'ufo400': UFO400,
-        'xupv2p': XUPV2P,}
+xbrd = {'anvyl': Anvyl, 'atlys': Atlys, 'mojo': Mojo, 'nexys': Nexys,
+        'nexys_video': NexysVideo, 'parallella': Parallella,
+        'pone': PapilioOne, 'ppro': PapilioPro, 'sx1': SX1,
+        'ufo400': UFO400, 'waxwing45': Waxwing45,
+        'waxwing45carrier': Waxwing45carrier, 'xula': Xula,
+        'xula2': Xula2, 'xula2_stickit_mb': Xula2StickItMB,
+        'xupv2p': XUPV2P, 'zybo': Zybo, 'cmoda7_15t': CModA7_15T,
+        'cmoda7_35t': CModA7_35T,
+        }
 
-abrd = {'de0nano': DE0Nano, 'de0nano_soc': DE0NanoSOC, 'de0cv': DE0CV,}
+abrd = {'de0nano': DE0Nano, 'de0nano_soc': DE0NanoSOC, 'de0cv': DE0CV, 
+        'de1_soc': DE1SOC,}
 
 lbrd = {'icestick': Icestick, 'catboard': CATBoard}
 

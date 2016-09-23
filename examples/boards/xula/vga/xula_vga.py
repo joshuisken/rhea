@@ -1,50 +1,74 @@
 
-from myhdl import *
+import myhdl
+from myhdl import Signal, intbv, ResetSignal, always
 
-import rhea
-from rhea.system import Clock
-from rhea.system import Reset
-from rhea.system import Global
-
-from rhea.cores.video import VGA
-from rhea.cores.video import VideoMemory
-from rhea.cores.video import m_vga_sync
-from rhea.cores.video import m_color_bars
+from rhea.system import Global, Clock, Reset
+from rhea.cores.video import VGA, VideoMemory
+from rhea.cores.video import vga_sync, color_bars
+from rhea.utils.test import tb_convert
 
 
-def mm_vgasys(
-
+@myhdl.block
+def xula_vga(
     # ~~~[PORTS]~~~
-    clock,  reset, vselect,
+    vselect,
     hsync, vsync, 
     red, green, blue,
     pxlen, active,
+    clock,
+    reset=None,
 
     # ~~~~[PARAMETERS]~~~~
-    resolution=(640,480,),
-    color_depth=(10,10,10,),
+    # @todo: replace these parameters with a single VGATimingParameter
+    resolution=(640, 480,),
+    color_depth=(8, 8, 8,),
     refresh_rate=60,
     line_rate=31250
-    ):
-    
+):
+    """
+    (arguments == ports)
+    Arguments:
+        vselect:
+
+    Parameters:
+        resolution: the video resolution
+        color_depth: the color depth of a pixel, the number of bits
+            for each color component in a pixel.
+        refresh_rate: the refresh rate of the video
+    """
+    # stub out reset if needed
+    if reset is None:
+        reset = ResetSignal(0, active=0, async=False)
+
+        @always(clock.posedge)
+        def reset_stub():
+            reset.next = not reset.active
+
+    else:
+        reset_stub = None
+
     # create the system-level signals, overwrite clock, reset
     glbl = Global(clock=clock, reset=reset)
+
     # VGA inteface
-    vga = VGA(hsync=hsync, vsync=vsync, 
-              red=red, green=green, blue=blue,
-              pxlen=pxlen, active=active)
+    vga = VGA()
+    # assign the top-level ports to the VGA interface
+    vga.assign(
+        hsync=hsync, vsync=vsync,
+        red=red, green=green, blue=blue,
+        pxlen=pxlen, active=active
+    )
+
     # video memory interface
-    vmem = VideoMemory()
+    vmem = VideoMemory(color_depth=color_depth)
         
-    # instances of modules
-    gbar = m_color_bars(glbl, vmem, 
-                        resolution=resolution)
+    # color bar generation
+    bar_inst = color_bars(glbl, vmem, resolution=resolution)
 
-    gvga = m_vga_sync(glbl, vga, vmem,
-                      resolution=resolution)
+    # VGA driver
+    vga_inst = vga_sync(glbl, vga, vmem, resolution=resolution)
 
-
-    return gvga, gbar
+    return myhdl.instances()
 
 
 def convert(color_depth=(10, 10, 10,)):
@@ -63,16 +87,14 @@ def convert(color_depth=(10, 10, 10,)):
     pxlen = Signal(bool(0))
     active = Signal(bool(0))
 
-    toVerilog.timescale = '1ns/1ns'
-    toVerilog(mm_vgasys, clock, reset, vselect,
-              hsync, vsync, red, green, blue,
-              pxlen, active)
-
-    toVHDL(mm_vgasys, clock, reset, vselect,
-           hsync, vsync, red, green, blue,
-           pxlen, active)
+    inst = xula_vga(
+        clock, reset, vselect,
+        hsync, vsync, red, green, blue,
+        pxlen, active
+    )
+    tb_convert(inst)
 
 
 if __name__ == '__main__':
     convert()
-    
+

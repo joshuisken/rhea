@@ -1,16 +1,27 @@
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 
 from fractions import gcd
+import myhdl
+from myhdl import Signal, intbv, modbv, enum, always_seq, always
 
-from myhdl import (Signal, intbv, modbv, enum, always_seq, 
-                   always, now)
 
-
+@myhdl.block
 def uartbaud(glbl, baudce, baudce16, baudrate=115200):
     """ Generate the UART baudrate strobe
+
     Three separate strobes are create: baudce, baudceh
+    
+    Arguments:
+        glbl: rhea.Global interface, clk from glbl
+        baudce: The baudce stobe
+        baudce16: The baudce16 strobe
+        Both of these are calculated in the function.
+
+    Parameters:
+        baudrate: The desired baudrate
+
+    myhdl convertible
     """
     clock, reset = glbl.clock, glbl.reset
 
@@ -37,7 +48,7 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
     cnt16 = Signal(modbv(0, min=0, max=16))
 
     @always_seq(clock.posedge, reset=reset)
-    def rtlbaud16():
+    def beh_baud16():
         if cnt >= cntmax:
             cnt.next = cnt - cntmax  #baudlimit
             baudce16.next = True
@@ -46,7 +57,7 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
             baudce16.next = False
 
     @always_seq(clock.posedge, reset=reset)
-    def rtlbaud():
+    def beh_baud():
         # this strobe will be delayed one clocke from
         # the baudce16 strobe (non-issue)
         if baudce16:
@@ -58,11 +69,22 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
         else:
             baudce.next = False
 
-    return rtlbaud16, rtlbaud
+    return myhdl.instances()
 
 
+@myhdl.block
 def uarttx(glbl, fbustx, tx, baudce):
-    """
+    """UART transmitter  function
+    
+    Arguments(Ports):
+        glbl : rhea.Global interface, clock and reset
+        fbustx : FIFOBus interface to the TX fifo
+        tx : The actual transmition line
+
+    Parameters:
+        baudce : The transmittion baud rate
+
+    myhdl convertible
     """
     clock, reset = glbl.clock, glbl.reset
 
@@ -72,15 +94,15 @@ def uarttx(glbl, fbustx, tx, baudce):
     bitcnt = Signal(intbv(0, min=0, max=9))
 
     @always_seq(clock.posedge, reset=reset)
-    def rtltx():
+    def beh_tx():
         # default values
-        fbustx.rd.next = False
+        fbustx.read.next = False
 
         # state handlers
         if state == states.wait:
             if not fbustx.empty and baudce:
-                txbyte.next = fbustx.rdata
-                fbustx.rd.next = True
+                txbyte.next = fbustx.read_data
+                fbustx.read.next = True
                 state.next = states.start
 
         elif state == states.start:
@@ -109,11 +131,22 @@ def uarttx(glbl, fbustx, tx, baudce):
         else:
             assert False, "Invalid state %s" % (state)
 
-    return rtltx
+    return myhdl.instances()
 
 
+@myhdl.block
 def uartrx(glbl, fbusrx, rx, baudce16):
-    """ """
+    """UART receiver function
+       
+    Arguments(Ports):
+        glbl : rhea.Global interface, clock and reset
+        fbusrx : FIFOBus interface to the RX fifo
+        rx : The actual receiver line
+        baudce16 : The receive baud rate, strobes 16x the
+            configured baud rate.
+
+    myhdl convertible
+    """
     clock, reset = glbl.clock, glbl.reset
 
     states = enum('wait', 'byte', 'stop', 'end')
@@ -130,7 +163,7 @@ def uartrx(glbl, fbusrx, rx, baudce16):
     # get the middle of the bits, always sync to the beginning
     # (negedge) of the start bit
     @always(clock.posedge)
-    def rtlmid():
+    def beh_mid():
         rxd.next = rx
         if (rxd and not rx) and state == states.wait:
             mcnt.next = 0
@@ -147,9 +180,9 @@ def uartrx(glbl, fbusrx, rx, baudce16):
             midbit.next = False
 
     @always_seq(clock.posedge, reset=reset)
-    def rtlrx():
+    def beh_rx():
         # defaults
-        fbusrx.wr.next = False
+        fbusrx.write.next = False
 
         # state handlers
         if state == states.wait:
@@ -168,11 +201,11 @@ def uartrx(glbl, fbusrx, rx, baudce16):
             if midbit:
                 #assert rx
                 state.next = states.end
-                fbusrx.wr.next = True
-                fbusrx.wdata.next = rxbyte
+                fbusrx.write.next = True
+                fbusrx.write_data.next = rxbyte
 
         elif state == states.end:
             state.next = states.wait
             bitcnt.next = 0
 
-    return rtlmid, rtlrx
+    return myhdl.instances()

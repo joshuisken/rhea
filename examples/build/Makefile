@@ -23,15 +23,15 @@ anvyl: #xilinx/anvyl.bit
 mojo: #xilinx/anvyl.bit
 	time $(PYTHON) ex_mojo.py
 
-#atlys: #xilinx/atlys.bit
-#	$(PYTHON) ex_atlys.py
+# atlys: #xilinx/atlys.bit
+# 	$(PYTHON) ex_atlys.py
 
-#zybo: #xilinx/zybo.bit
-#	$(PYTHON) ex_zybo.py
+zybo: #xilinx/zybo.bit
+	$(PYTHON) ex_zybo.py
 
 
-#parallela: #xilinx/parallela.bit
-#	$(PYTHON) ex_parallela.py
+# parallela: #xilinx/parallela.bit
+# 	$(PYTHON) ex_parallela.py
 
 
 #########################################################
@@ -44,6 +44,12 @@ de0nano: #altera/
 
 de0cv: #altera/
 	$(PYTHON) ex_de0cv.py
+
+#de0nano_soc: #altera/
+#	$(PTYHON) ex_de0nano_soc.py
+
+#de1_soc: #altera/
+#	$(PYTHON) ex_de1_soc.py
 
 #de2cII: #altera/
 #	$(PYTHON) ex_de2cII.py

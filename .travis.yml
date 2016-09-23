@@ -3,42 +3,25 @@ sudo: false
 
 language: python
 python:
+  - "3.5"
   - "3.4"
   - "2.7"
-  - "pypy"
- 
+# pypy runs super slow with coverage (at least how I am
+# running it), don't run pypy with coverage.  Will need
+# to use the build matrix to only run pypy with no coverage
+#  - "pypy"
+
 addons:
   apt:
-    source:
-      - ubuntu-toolchain-r-test
     packages:
       - build-essential
-      - clang
-      - bison
-      - flex
-      - libreadline-dev
-      - gawk
-      - tcl
-      - tcl-dev
-      - graphviz
-      - xdot
-      - pkg-config
       - autoconf
       - gperf
-      - libffi-dev
-      - libftdi-dev
-#    update-alternatives:
-#      - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
-#      - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
-
-# cannot figure out how to get a new version of gcc
-# to build the dependencies.
-# gcc-4.8 ??? why no work?
-# g++-4.8 ??? why no work?
 
 cache:
   directories:
   - $HOME/iverilog
+  - $HOME/ghdl
   - $HOME/icestorm
   - $HOME/arachne-pnr
   - $HOME/yosys
@@ -51,18 +34,9 @@ before_install:
   - ls $HOME/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
-# these fail to build and install because the inability to 
-# update to gcc >= 4.8
-#  - chmod +x ./scripts/ci/install_icestorm.sh
-#  - ./scripts/ci/install_icestorm.sh
-#  - chmod +x ./scripts/ci/install_arachne.sh
-#  - ./scripts/ci/install_arachne.sh
-  - chmod +x ./scripts/ci/install_yosys.sh
-  - ./scripts/ci/install_yosys.sh
-  - ls $HOME/yosys/
-  - yosys -V
-  
-# command to install dependencies
+
+# command to install dependencies, always using the latest
+# myhdl for the master branch
 install:
   - chmod +x ./scripts/ci/install_myhdl.sh
   - ./scripts/ci/install_myhdl.sh
@@ -71,15 +45,25 @@ install:
   - pip install Pillow
   - pip install .
 
+# env:
+#   - RUNLONG="false"
+#   - COVERAGE="true"
+
+# the longtests still take too long with pypy
+#matrix:
+#  exclude:
+#    - python: "pypy"
+#  include:
+#    - python: "pypy"
+#      env: RUNLONG="true"
+
 # run the test
 script:
-  - cd examples
-  - py.test -s
-# There is some issue that causes the tests executed with py.test
-# to take 10x longer, run the tests individually until resolved.
-  - cd ../test
-  - make test
-#  - py.test -s  
+  - chmod +x ./scripts/ci/run_tests.sh
+  - ./scripts/ci/run_tests.sh
+
+after_success:
+  - coveralls
 
 notifications:
-  email: false
+  email: true

@@ -1,16 +1,18 @@
 
 from __future__ import absolute_import
 
+# interfaces
+from .vidmem import VideoMemory
+from .vidstream import VideoStream
+
+# video subblocks
 # generic colorbar generator
-from ._color_bars import color_bars
-
+from .color_bars import color_bars
+# small LCD display
 from .lcd import lt24lcd
-
 # generic VGA core
-from .vga._vga_intf import VGA
-from .vga._vga_sync import vga_sync
-
-from ._vidmem import VideoMemory
-
-from .hdmi._hdmi import hdmi
-from .hdmi._hdmi_intf import HDMI
+from .vga.vga_intf import VGA
+from .vga.vga_sync import vga_sync
+# HDMI tranceivers
+from .hdmi.hdmi_intf import HDMIExtInterface
+from .hdmi.hdmi import hdmi_xcvr

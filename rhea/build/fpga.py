@@ -2,7 +2,6 @@
 # Copyright (c) 2014-2015 Christopher Felton
 #
 
-
 import os
 import shutil
 import inspect
@@ -10,6 +9,7 @@ from random import randint
 from copy import copy
 
 import myhdl
+from myhdl._block import _Block as Block
 
 from .extintf import Port
 from .extintf import Clock
@@ -72,7 +72,7 @@ class FPGA(object):
             self.top_name = top.func_name
 
     def get_flow(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def _remove_embed_attr(self, pins, pattr):
         """ removed an embedded pin attribute def if present.
@@ -197,7 +197,7 @@ class FPGA(object):
 
         # get the top-level ports and parameters
         assert self.top is not None
-        pp = inspect.getargspec(self.top)
+        pp = inspect.getargspec(self.top.func)
 
         # all of the arguments (no default values) are treated as
         # ports.  This doesn't mean it needs to be a port but it

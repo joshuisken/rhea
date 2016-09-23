@@ -1,4 +1,5 @@
 
 from __future__ import absolute_import
 
-from ._hdmi import  hdmi
+from .hdmi_intf import HDMIExtInterface
+from .hdmi import hdmi_xcvr

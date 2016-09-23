@@ -15,6 +15,7 @@ from rhea.build.boards import get_board
 flow = None
 
 
+@myhdl.block
 def de0nano_soc_device_prims(clock, reset, led):
     
     clkmgmt = ClockManagement(clock, reset,
@@ -70,7 +71,8 @@ def test_devprim(args=None):
     reset = Reset(0, active=0, async=True)
     led = Signal(intbv(0))
 
-    def _bench_devprim():
+    @myhdl.block
+    def bench_devprim():
         tbdut = de0nano_soc_device_prims(clock, reset, led)
         tbclk = clock.gen(hticks=10000)
         
@@ -86,7 +88,7 @@ def test_devprim(args=None):
 
         return tbdut, tbclk, tbstim
 
-    run_testbench(_bench_devprim, args=args)
+    run_testbench(bench_devprim, args=args)
 
     
 def build_bitfile():
@@ -112,7 +114,7 @@ def program():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--compile", action='store_true', default=False)
+    parser.add_argument("--build", action='store_true', default=False)
     parser.add_argument("--program", action='store_true', default=False)
     parser.add_argument("--trace", action='store_true', default=False)
     args = parser.parse_args()
@@ -120,7 +122,7 @@ def main():
     # run a simple tests to check all is ok
     test_devprim(args=args)
 
-    if args.compile:
+    if args.build:
         build_bitfile()
 
     if args.program:

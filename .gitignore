@@ -8,6 +8,8 @@
 *.egg-info
 /dist
 /build
+/docs/build
+/.idea
 eggs
 parts
 bin
@@ -18,6 +20,7 @@ develop-eggs
 lib
 lib64
 .backups
+.cache
 
 # generated files, typically these are not added 
 *.v
@@ -28,6 +31,8 @@ lib64
 *.txt
 vcd
 *.log
+*.o
+*.ys
 
 # Installer logs
 pip-log.txt
@@ -37,10 +42,18 @@ pip-log.txt
 .tox
 nosetests.xml
 
-# Translations
-*.mo
+# generated examples
+/examples/**/xilinx
 
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
+# vivado temporary files on windows
+.Xil/
+
+# old gitignore version
+/.gitignore~
+
+# cloned myhdl repo
+/myhdl
+
+# OS metadata:
+.DS_Store
+thumbs.db
